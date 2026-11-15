@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kinesis — La tua musica, sempre con te</title>
+<meta name="description" content="Kinesis è il lettore musicale per Android: i tuoi MP3, playlist, equalizzatore, musica libera da scoprire e audio estratto dai video.">
+<meta name="theme-color" content="#1565C0">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 108 108'%3E%3Crect width='108' height='108' rx='24' fill='%230B2A5B'/%3E%3Cpath fill='%231E88E5' d='M0,108V76C20,76 40,70 56,74C70,78 76,56 90,56C98,56 104,60 108,62V108Z'/%3E%3Cpath fill='%234DD0E1' d='M0,108V72C14,72 34,56 48,56C62,56 64,70 76,70C88,70 98,64 108,62V108Z'/%3E%3Cpath fill='%23fff' d='M39,51a6,4.5 0 1,0 12,0a6,4.5 0 1,0 -12,0Z M49,26H51.5V51H49Z M51.5,26C56,29 63,31 60.5,40C59,36 55,35 51.5,34Z'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --blue:#1565C0; --navy:#0D2B6B; --violet:#2A1B5E; --deep:#0B2A5B;
+    --wave:#1E88E5; --cyan:#4DD0E1;
+    --text:#FFFFFF; --soft:#CFD8DC; --muted:#90A4AE;
+    --glass:rgba(255,255,255,.08); --glass-line:rgba(255,255,255,.12);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:Roboto,system-ui,sans-serif;color:var(--text);line-height:1.6;
+    background:linear-gradient(180deg,var(--blue) 0%,var(--navy) 45%,var(--violet) 100%) fixed;
+    min-height:100vh;overflow-x:hidden;
+  }
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1140px;margin:0 auto;padding:0 24px}
+  h1,h2,h3{font-weight:900;line-height:1.1;letter-spacing:-.5px}
+
+  /* pulsanti "in rilievo" come nell'app */
+  .pill{
+    display:inline-flex;align-items:center;gap:10px;padding:14px 26px;border-radius:22px;font-weight:700;
+    background:linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,.08));
+    border:1px solid rgba(255,255,255,.35);box-shadow:0 3px 0 rgba(0,0,0,.33);
+    transition:transform .15s, box-shadow .15s;
+  }
+  .pill:hover{transform:translateY(-2px);box-shadow:0 5px 0 rgba(0,0,0,.33)}
+  .pill:active{transform:translateY(1px);box-shadow:0 1px 0 rgba(0,0,0,.33)}
+  .pill.cyan{background:linear-gradient(180deg,#7fe3ef,var(--cyan));color:var(--deep);border-color:#a8eef6}
+  .glass{background:var(--glass);border:1px solid var(--glass-line);border-radius:24px;backdrop-filter:blur(6px)}
+
+  /* NAV */
+  header{position:sticky;top:0;z-index:20;background:rgba(13,43,107,.55);backdrop-filter:blur(12px);border-bottom:1px solid var(--glass-line)}
+  nav{display:flex;align-items:center;justify-content:space-between;height:68px}
+  .brand{display:flex;align-items:center;gap:12px;font-weight:900;font-size:1.35rem;letter-spacing:2px}
+  .brand svg{width:38px;height:38px;border-radius:10px}
+  .links{display:flex;gap:30px;color:var(--soft);font-size:.95rem;font-weight:500}
+  .links a:hover{color:var(--cyan)}
+
+  /* HERO */
+  .hero{display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:center;padding:80px 0 60px}
+  .tag{display:inline-block;padding:6px 14px;border-radius:999px;background:rgba(77,208,225,.15);color:var(--cyan);font-size:.8rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:22px}
+  .hero h1{font-size:clamp(2.6rem,6vw,4.6rem);margin-bottom:22px}
+  .hero h1 span{background:linear-gradient(90deg,var(--cyan),#9be9f3);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p{color:var(--soft);font-size:1.15rem;max-width:520px;margin-bottom:34px}
+  .cta{display:flex;gap:16px;flex-wrap:wrap}
+  .note{margin-top:18px;color:var(--muted);font-size:.85rem}
+
+  /* TELEFONO con il player */
+  .phone-box{position:relative;display:flex;justify-content:center}
+  .glow{position:absolute;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,rgba(77,208,225,.35),transparent 65%);top:50%;left:50%;transform:translate(-50%,-50%)}
+  .phone{
+    position:relative;width:290px;height:590px;border-radius:44px;padding:14px;
+    background:#0a1430;box-shadow:0 40px 80px rgba(0,0,0,.45),inset 0 0 0 2px rgba(255,255,255,.08);
+    animation:float 6s ease-in-out infinite;
+  }
+  @keyframes float{50%{transform:translateY(-12px)}}
+  .screen{height:100%;border-radius:32px;overflow:hidden;background:linear-gradient(180deg,var(--blue),var(--navy) 55%,var(--violet));display:flex;flex-direction:column;padding:26px 18px 18px}
+  .scr-top{display:flex;justify-content:space-between;font-size:.68rem;color:var(--soft);font-weight:700;margin-bottom:16px}
+  .art{aspect-ratio:1;border-radius:22px;background:var(--deep);overflow:hidden;position:relative;border:1px solid var(--glass-line)}
+  .art svg{width:100%;height:100%;display:block}
+  .eqbars{position:absolute;top:14px;right:14px;display:flex;gap:3px;align-items:flex-end;height:22px}
+  .eqbars i{width:4px;background:#fff;border-radius:2px;animation:bar 1s ease-in-out infinite}
+  .eqbars i:nth-child(2){animation-delay:-.3s}.eqbars i:nth-child(3){animation-delay:-.6s}.eqbars i:nth-child(4){animation-delay:-.15s}
+  @keyframes bar{0%,100%{height:5px}50%{height:22px}}
+  .song{margin-top:18px}
+  .song b{display:block;font-size:1rem}
+  .song small{color:var(--muted);font-size:.75rem}
+  .bar{height:4px;border-radius:2px;background:rgba(255,255,255,.18);margin:16px 0 6px;position:relative}
+  .bar::after{content:"";position:absolute;left:0;top:0;height:100%;width:38%;background:var(--cyan);border-radius:2px;animation:prog 20s linear infinite}
+  @keyframes prog{from{width:5%}to{width:95%}}
+  .times{display:flex;justify-content:space-between;font-size:.62rem;color:var(--muted)}
+  .controls{display:flex;justify-content:center;align-items:center;gap:18px;margin-top:auto}
+  .rb{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;
+      background:linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,.08));border:1px solid rgba(255,255,255,.35);box-shadow:0 2px 0 rgba(0,0,0,.33)}
+  .rb.big{width:64px;height:64px;background:linear-gradient(180deg,#7fe3ef,var(--cyan));border-color:#a8eef6}
+  .rb svg{width:22px;height:22px;fill:#fff}.rb.big svg{width:30px;height:30px;fill:var(--deep)}
+
+  /* SEZIONI */
+  section{padding:90px 0}
+  .head{text-align:center;max-width:640px;margin:0 auto 54px}
+  .head h2{font-size:clamp(2rem,4vw,2.9rem);margin-bottom:14px}
+  .head p{color:var(--soft)}
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .feat{padding:30px;transition:transform .2s,background .2s}
+  .feat:hover{transform:translateY(-5px);background:rgba(255,255,255,.12)}
+  .ico{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;margin-bottom:20px;
+       background:linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,.08));border:1px solid rgba(255,255,255,.35);box-shadow:0 2px 0 rgba(0,0,0,.33)}
+  .ico svg{width:24px;height:24px;fill:var(--cyan)}
+  .feat h3{font-size:1.2rem;margin-bottom:8px;letter-spacing:0}
+  .feat p{color:var(--soft);font-size:.95rem}
+
+  /* GENERI */
+  .genres{display:flex;flex-wrap:wrap;gap:14px;justify-content:center}
+  .genre{display:flex;align-items:center;gap:10px;padding:14px 22px;border-radius:22px;font-weight:700;border:1px solid rgba(255,255,255,.25);box-shadow:0 3px 0 rgba(0,0,0,.3)}
+  .genre svg{width:20px;height:20px;fill:#fff}
+  .g1{background:linear-gradient(135deg,#e53935,#8e24aa)}.g2{background:linear-gradient(135deg,#ec407a,#7e57c2)}
+  .g3{background:linear-gradient(135deg,#ff9800,#e53935)}.g4{background:linear-gradient(135deg,#424242,#1565c0)}
+  .g5{background:linear-gradient(135deg,#43a047,#c62828)}.g6{background:linear-gradient(135deg,#8d6e63,#3949ab)}
+  .g7{background:linear-gradient(135deg,#00acc1,#5e35b1)}
+
+  /* EQUALIZZATORE */
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
+  .split h2{font-size:clamp(2rem,4vw,2.8rem);margin-bottom:18px}
+  .split p{color:var(--soft);margin-bottom:14px}
+  .checks{list-style:none;margin-top:22px;display:grid;gap:12px}
+  .checks li{display:flex;gap:12px;align-items:flex-start;color:var(--soft)}
+  .checks li::before{content:"";flex:none;width:20px;height:20px;margin-top:3px;border-radius:50%;background:var(--cyan) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%230B2A5B' d='M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z'/%3E%3C/svg%3E") center/14px no-repeat}
+  .eq{padding:34px}
+  .eq-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:26px;font-weight:700}
+  .switch{width:46px;height:26px;border-radius:13px;background:var(--cyan);position:relative}
+  .switch::after{content:"";position:absolute;right:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#fff}
+  .sliders{display:flex;justify-content:space-between;height:200px;align-items:flex-end;gap:10px}
+  .sl{flex:1;display:flex;flex-direction:column;align-items:center;gap:10px;height:100%}
+  .track{flex:1;width:6px;border-radius:3px;background:rgba(255,255,255,.15);position:relative}
+  .fill{position:absolute;bottom:0;left:0;width:100%;border-radius:3px;background:linear-gradient(0deg,var(--wave),var(--cyan));transition:height 1.2s ease}
+  .knob{position:absolute;left:50%;width:20px;height:20px;border-radius:50%;background:#fff;transform:translate(-50%,50%);box-shadow:0 2px 6px rgba(0,0,0,.4);transition:bottom 1.2s ease}
+  .sl small{color:var(--muted);font-size:.72rem}
+
+  /* DOWNLOAD */
+  .download{text-align:center;padding:70px 32px;position:relative;overflow:hidden}
+  .download h2{font-size:clamp(2rem,4vw,3rem);margin-bottom:14px}
+  .download p{color:var(--soft);max-width:540px;margin:0 auto 32px}
+  .download .waves{position:absolute;left:0;right:0;bottom:0;width:100%;height:80px;opacity:.35;pointer-events:none}
+  .download > *:not(.waves){position:relative}
+  .langs{margin-top:22px;color:var(--muted);font-size:.85rem}
+
+  footer{padding:36px 0 44px;color:var(--muted);font-size:.85rem}
+  footer .wrap{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+
+  .reveal{opacity:0;transform:translateY(24px);transition:opacity .7s,transform .7s}
+  .reveal.in{opacity:1;transform:none}
+
+  @media (max-width:900px){
+    .links{display:none}
+    .hero,.split{grid-template-columns:1fr}
+    .hero{padding:48px 0 30px;text-align:center}
+    .hero p{margin-left:auto;margin-right:auto}
+    .cta{justify-content:center}
+    .features{grid-template-columns:1fr}
+    section{padding:64px 0}
+  }
+  @media (min-width:901px) and (max-width:1060px){.features{grid-template-columns:1fr 1fr}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.reveal{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+
+<!-- logo riutilizzabile (onde + nota, come l'icona dell'app) -->
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="logo" viewBox="0 0 108 108">
+    <rect width="108" height="108" fill="#0B2A5B"/>
+    <path fill="#1E88E5" d="M0,108V76C20,76 40,70 56,74C70,78 76,56 90,56C98,56 104,60 108,62V108Z"/>
+    <path fill="#4DD0E1" d="M0,108V72C14,72 34,56 48,56C62,56 64,70 76,70C88,70 98,64 108,62V108Z"/>
+    <path fill="#fff" d="M39,51a6,4.5 0 1,0 12,0a6,4.5 0 1,0 -12,0Z"/>
+    <path fill="#fff" d="M49,26H51.5V51H49Z"/>
+    <path fill="#fff" d="M51.5,26C56,29 63,31 60.5,40C59,36 55,35 51.5,34Z"/>
+  </symbol>
+</svg>
+
+<header>
+  <div class="wrap">
+    <nav>
+      <a href="#" class="brand"><svg><use href="#logo"/></svg>KINESIS</a>
+      <div class="links">
+        <a href="#funzioni">Funzioni</a>
+        <a href="#scopri">Scopri</a>
+        <a href="#suono">Suono</a>
+        <a href="#scarica">Scarica</a>
+      </div>
+      <a href="#scarica" class="pill cyan" style="padding:10px 20px">Scarica</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <!-- HERO -->
+  <div class="wrap hero">
+    <div>
+      <span class="tag">Lettore musicale per Android</span>
+      <h1>La tua musica,<br><span>in movimento.</span></h1>
+      <p>Kinesis riproduce i tuoi MP3, li organizza in playlist, ti fa scoprire musica nuova e trasforma i video in audio. Tutto in un'app semplice, bella da usare.</p>
+      <div class="cta">
+        <a href="#scarica" class="pill cyan">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M5 20h14v-2H5v2zm7-18-5.5 5.5 1.4 1.4L11 5.8V16h2V5.8l3.1 3.1 1.4-1.4L12 2z" transform="rotate(180 12 12)"/></svg>
+          Scarica l'app
+        </a>
+        <a href="#funzioni" class="pill">Scopri le funzioni</a>
+      </div>
+      <p class="note">Disponibile per Android 8.1 e successivi · Compatibile con Android Auto</p>
+    </div>
+
+    <div class="phone-box">
+      <div class="glow"></div>
+      <div class="phone" aria-hidden="true">
+        <div class="screen">
+          <div class="scr-top"><span>LA MIA MUSICA</span><span>Brano 3 di 24</span></div>
+          <div class="art">
+            <svg viewBox="0 0 108 108"><use href="#logo"/></svg>
+            <div class="eqbars"><i></i><i></i><i></i><i></i></div>
+          </div>
+          <div class="song"><b>Onde d'estate</b><small>Artista sconosciuto · MP3</small></div>
+          <div class="bar"></div>
+          <div class="times"><span>1:24</span><span>3:47</span></div>
+          <div class="controls">
+            <div class="rb"><svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg></div>
+            <div class="rb big"><svg viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg></div>
+            <div class="rb"><svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FUNZIONI -->
+  <section id="funzioni">
+    <div class="wrap">
+      <div class="head reveal">
+        <h2>Tutto quello che serve,<br>niente di superfluo</h2>
+        <p>Kinesis è pensato per ascoltare: pochi tocchi, grandi pulsanti, nessuna confusione.</p>
+      </div>
+      <div class="features">
+        <div class="glass feat reveal">
+          <div class="ico"><svg viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg></div>
+          <h3>I tuoi MP3, per cartella</h3>
+          <p>Scegli la cartella e ascolta subito. Continua nella cartella, ripeti un brano o fermati alla fine: decidi tu.</p>
+        </div>
+        <div class="glass feat reveal">
+          <div class="ico"><svg viewBox="0 0 24 24"><path d="M15 6H3v2h12V6zm0 4H3v2h12v-2zM3 16h8v-2H3v2zM17 6v8.18c-.31-.11-.65-.18-1-.18-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3V8h3V6h-5z"/></svg></div>
+          <h3>Playlist e coda</h3>
+          <p>Crea tutte le playlist che vuoi e metti in coda i prossimi brani. Il pulsante coda lampeggia quando c'è qualcosa in arrivo.</p>
+        </div>
+        <div class="glass feat reveal">
+          <div class="ico"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></div>
+          <h3>Musica libera online</h3>
+          <p>Cerca titoli e artisti tra la musica libera e gratuita di Internet Archive, ascoltala e salvala nella tua cartella.</p>
+        </div>
+        <div class="glass feat reveal">
+          <div class="ico"><svg viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg></div>
+          <h3>Audio dai video</h3>
+          <p>Hai un video con una canzone che ti piace? Kinesis ne estrae l'audio e lo aggiunge alla tua musica.</p>
+        </div>
+        <div class="glass feat reveal">
+          <div class="ico"><svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg></div>
+          <h3>Modalità karaoke</h3>
+          <p>Togli la voce dai brani stereo e canta tu sulla base strumentale.</p>
+        </div>
+        <div class="glass feat reveal">
+          <div class="ico"><svg viewBox="0 0 24 24"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/></svg></div>
+          <h3>In auto e in notifica</h3>
+          <p>Controlli dalla tendina delle notifiche e supporto ad Android Auto: la musica ti segue anche in macchina.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GENERI -->
+  <section id="scopri" style="padding-top:20px">
+    <div class="wrap">
+      <div class="head reveal">
+        <h2>Scopri qualcosa di nuovo</h2>
+        <p>Tocca un genere e lasciati guidare dalle proposte.</p>
+      </div>
+      <div class="genres reveal">
+        <span class="genre g1"><svg viewBox="0 0 24 24"><path d="M7,2v11h3v9l7,-12h-4l4,-8z"/></svg>Rock</span>
+        <span class="genre g2"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="#fff" stroke-width="2"/></svg>Dance</span>
+        <span class="genre g3"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9h-9z"/></svg>Latino</span>
+        <span class="genre g4"><svg viewBox="0 0 24 24"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm-1 3.9V21h2v-3.1A7 7 0 0 0 19 11h-2a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.9z"/></svg>Rap</span>
+        <span class="genre g5"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-7-11a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 6.5-7 11-7 11z"/></svg>Italiana</span>
+        <span class="genre g6"><svg viewBox="0 0 24 24"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>Classica</span>
+        <span class="genre g7"><svg viewBox="0 0 24 24"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8l-6.2 4.5 2.4-7.4L2 9.4h7.6z"/></svg>Moderna</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- SUONO -->
+  <section id="suono">
+    <div class="wrap split">
+      <div class="reveal">
+        <span class="tag">Suono</span>
+        <h2>Il suono come piace a te</h2>
+        <p>L'equalizzatore integrato ti dà il controllo completo, senza complicazioni.</p>
+        <ul class="checks">
+          <li>Preset pronti oppure bande regolate a mano</li>
+          <li>Bassi e alti con un solo gesto</li>
+          <li>Voce rimossa per i brani strumentali</li>
+          <li>Colori dello sfondo da scegliere tra più temi</li>
+        </ul>
+      </div>
+      <div class="glass eq reveal" aria-hidden="true">
+        <div class="eq-title"><span>Equalizzatore</span><span class="switch"></span></div>
+        <div class="sliders" id="sliders"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DOWNLOAD -->
+  <section id="scarica">
+    <div class="wrap">
+      <div class="glass download reveal">
+        <svg class="waves" viewBox="0 0 108 30" preserveAspectRatio="none">
+          <path fill="#1E88E5" d="M0,30V18C20,18 40,12 56,16C70,20 76,4 90,4C98,4 104,8 108,10V30Z"/>
+          <path fill="#4DD0E1" d="M0,30V14C14,14 34,2 48,2C62,2 64,14 76,14C88,14 98,8 108,8V30Z" opacity=".8"/>
+        </svg>
+        <h2>Metti Kinesis in tasca</h2>
+        <p>Scarica l'app, scegli la cartella con la tua musica e premi play. Nient'altro.</p>
+        <!-- SOSTITUISCI "#" con il link reale (Play Store o file APK) -->
+        <a href="#" class="pill cyan">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M17.6 9.48 19.44 6.3a.38.38 0 0 0-.66-.38l-1.86 3.22A11.5 11.5 0 0 0 12 8.1c-1.77 0-3.43.37-4.92 1.04L5.22 5.92a.38.38 0 0 0-.66.38L6.4 9.48A10.8 10.8 0 0 0 1 18h22a10.8 10.8 0 0 0-5.4-8.52zM7 15.25a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5zm10 0a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5z"/></svg>
+          Scarica per Android
+        </a>
+        <p class="langs">Disponibile in italiano, inglese, spagnolo e francese</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <a href="#" class="brand" style="font-size:1rem"><svg style="width:28px;height:28px;border-radius:8px"><use href="#logo"/></svg>KINESIS</a>
+    <span>© <span id="y"></span> Giovanni Segreto · Tutti i diritti riservati</span>
+  </div>
+</footer>
+
+<script>
+  document.getElementById('y').textContent = new Date().getFullYear();
+
+  // equalizzatore animato
+  const labels = ['60', '230', '910', '3.6k', '14k'];
+  const box = document.getElementById('sliders');
+  const parts = labels.map(l => {
+    const s = document.createElement('div'); s.className = 'sl';
+    s.innerHTML = '<div class="track"><div class="fill"></div><div class="knob"></div></div><small>' + l + ' Hz</small>';
+    box.appendChild(s);
+    return { fill: s.querySelector('.fill'), knob: s.querySelector('.knob') };
+  });
+  function shuffleEq() {
+    parts.forEach(p => {
+      const v = 20 + Math.random() * 70;
+      p.fill.style.height = v + '%'; p.knob.style.bottom = v + '%';
+    });
+  }
+  shuffleEq(); setInterval(shuffleEq, 2200);
+
+  // comparsa allo scorrimento
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+  }), { threshold: .15 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+</script>
+</body>
+</html>
